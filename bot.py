@@ -147,13 +147,13 @@ class DiscordBot:
             
             embed.add_field(
                 name=f"{config.command_prefix}status",
-                value="Fetch status data from Google Sheets",
+                value="Thông báo trạng thái của các account đã được thêm vào. Các thông tin gồm: ID, Rank, Trạng thái, Map đang chơi. Account phải được kết bạn với ChaosMAX#9106 thì mới được cập nhật",
                 inline=False
             )
             
             embed.add_field(
                 name=f"{config.command_prefix}add {{id}}",
-                value="Add a new user ID to the sheet",
+                value="Thêm id vào Sheet. Đảm bảo đã kết bạn với ChaosMAX#9106 để được cập nhật.",
                 inline=False
             )
             
@@ -192,7 +192,7 @@ class DiscordBot:
                     success = self.sheets_client.add_new_entry(user_id)
                     
                     if success:
-                        await ctx.send(f"✅ Successfully added '{user_id}' to the sheet!")
+                        await ctx.send(f"✅ Đã thêm {user_id} vào. Kiểm tra xem đã kết bạn với ChaosMAX#9106 chưa.")
                         logger.info(f"Successfully added entry '{user_id}' for {ctx.author}")
                     else:
                         await ctx.send("❌ Failed to add entry to the sheet. Please try again.")
