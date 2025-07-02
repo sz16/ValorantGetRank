@@ -83,12 +83,15 @@ class DiscordBot:
         """Set up bot commands."""
         
         @self.bot.command(name='status')
-        async def status_command(ctx, worksheet: str = None):
+        async def status_command(ctx,*args):
             """
             Fetch and display status data from Google Sheets.
             
             Usage: c!status [worksheet_name]
             """
+            if args:
+                return
+            worksheet = None
             # Send typing indicator
             async with ctx.typing():
                 try:
@@ -149,12 +152,6 @@ class DiscordBot:
             )
             
             embed.add_field(
-                name=f"{config.command_prefix}status [worksheet]",
-                value="Fetch data from a specific worksheet",
-                inline=False
-            )
-            
-            embed.add_field(
                 name=f"{config.command_prefix}add {{id}}",
                 value="Add a new user ID to the sheet",
                 inline=False
@@ -171,7 +168,7 @@ class DiscordBot:
             await ctx.send(embed=embed)
         
         @self.bot.command(name='add')
-        async def add_command(ctx, user_id: str = None):
+        async def add_command(ctx, *, user_id: str|None = None):
             """
             Add a new user ID to the Google Sheet.
             
@@ -180,6 +177,7 @@ class DiscordBot:
             if not user_id:
                 await ctx.send("❌ Please provide a user ID. Usage: `c!add {id}`")
                 return
+            user_id = user_id.strip()
             
             # Send typing indicator
             async with ctx.typing():

@@ -137,7 +137,7 @@ class SheetsClient:
             return "📊 **Status Report**\n\n*Required columns B-E not found*"
         
         # Find the most recent timestamp from F column
-        from datetime import datetime
+        from datetime import datetime, timezone, timedelta
         import time
         
         latest_timestamp = 0
@@ -151,7 +151,8 @@ class SheetsClient:
         
         # Format the latest timestamp
         if latest_timestamp > 0:
-            last_updated_dt = datetime.fromtimestamp(latest_timestamp)
+            tz_vietnam = timezone(timedelta(hours=7))
+            last_updated_dt = datetime.fromtimestamp(latest_timestamp, tz = tz_vietnam)
             last_updated = last_updated_dt.strftime("%d/%m/%y - %H:%M:%S")
         else:
             last_updated = "Unknown"
