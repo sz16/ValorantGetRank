@@ -111,7 +111,7 @@ class DiscordBot:
                     
                     # Format the data
                     formatted_data: list = self.sheets_client.format_status_data(data)
-                    
+                    #print(formatted_data)
                     # Send the response directly without embed for larger display
                     for line in formatted_data:
                         await ctx.send(line)

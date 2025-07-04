@@ -162,7 +162,7 @@ class SheetsClient:
         
         # Create header row - B, C, D, E, Note with different widths
         # B column (id) gets 30 chars, others get 12, Note gets 8
-        b_width, c_width, d_width, e_width, note_width = 26, 12, 12, 15, 8
+        b_width, c_width, d_width, e_width = 26, 8, 8, 15
         
         display_headers = [
             f"{col_b[:b_width]:<{b_width}}", 
@@ -219,7 +219,9 @@ class SheetsClient:
                         # Check if more than 1 hour ago
                         now = datetime.now()
                         if now - last_update > timedelta(hours=1):
-                            val_d_fmt = "???"
+                            unknown = "???"
+                            val_d_fmt = f"{unknown:<{d_width}}"[:d_width]
+                            val_e_fmt = f"{unknown:<{e_width}}"[:e_width]
                     except:
                         pass  # If parsing fails, leave note empty
                 
