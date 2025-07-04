@@ -104,7 +104,7 @@ class SheetsClient:
             logger.error(f"Error getting worksheet names: {e}")
             raise
     
-    def format_status_data(self, data: List[Dict[str, str]]) -> str:
+    def format_status_data(self, data: List[Dict[str, str]]) -> List[str]:
         """
         Format the status data for Discord display as a table/board.
         Shows only columns B to E with Note column based on conditions.
@@ -116,7 +116,7 @@ class SheetsClient:
             Formatted string for Discord message in table format.
         """
         if not data:
-            return "📊 **Status Report**\n\n*No data available*"
+            return ["📊 **Status Report**\n\n*No data available*"]
         
         # Get all column names in order
         all_columns = []
@@ -124,7 +124,7 @@ class SheetsClient:
             all_columns = list(data[0].keys())
         
         if len(all_columns) < 5:  # Need at least 5 columns (A, B, C, D, E)
-            return "📊 **Status Report**\n\n*Not enough columns in spreadsheet*"
+            return ["📊 **Status Report**\n\n*Not enough columns in spreadsheet*"]
         
         # Get columns B, C, D, E, F (indices 1, 2, 3, 4, 5)
         col_b = all_columns[1] if len(all_columns) > 1 else None
@@ -133,8 +133,8 @@ class SheetsClient:
         col_e = all_columns[4] if len(all_columns) > 4 else None
         col_f = all_columns[5] if len(all_columns) > 5 else None
         
-        if not all([col_b, col_c, col_d, col_e]):
-            return "📊 **Status Report**\n\n*Required columns B-E not found*"
+        if not col_b or not col_c or not col_d or not col_e or not col_f:
+            return ["📊 **Status Report**\n\n*Required columns B-E not found*"]
         
         # Find the most recent timestamp from F column
         from datetime import datetime, timezone, timedelta
@@ -158,7 +158,7 @@ class SheetsClient:
             last_updated = "Unknown"
         
         # Start building the table with wider columns
-        message = f"📊 **Status Report**\nLast updated: {last_updated}\n\n```"
+        message = f"📊 **Trạng thái Online**\nThời gian cập nhật lần cuối: {last_updated}\n```"
         
         # Create header row - B, C, D, E, Note with different widths
         # B column (id) gets 30 chars, others get 12, Note gets 8
@@ -169,10 +169,11 @@ class SheetsClient:
             f"{col_c[:c_width]:<{c_width}}", 
             f"{col_d[:d_width]:<{d_width}}", 
             f"{col_e[:e_width]:<{e_width}}", 
-            f"{'Note':<{note_width}}"
+            #f"{'Note':<{note_width}}"
         ]
+        messageChunk = []
         header_row = "| " + " | ".join(display_headers) + " |"
-        separator = "|" + "|".join(["-" * (w+2) for w in [b_width, c_width, d_width, e_width, note_width]]) + "|"
+        separator = "|" + "|".join(["-" * (w+2) for w in [b_width, c_width, d_width, e_width]]) + "|"
         
         message += header_row + "\n" + separator + "\n"
         
@@ -180,53 +181,57 @@ class SheetsClient:
         import time
         
         # Add data rows (limit to 15 rows to avoid Discord message limit)
-        for record in data[:15]:
-            # Get values for each column
-            val_b = str(record.get(col_b, "")).strip()
-            val_c = str(record.get(col_c, "")).strip()
-            val_d = str(record.get(col_d, "")).strip()
-            val_e = str(record.get(col_e, "")).strip()
-            val_f = str(record.get(col_f, "")).strip() if col_f else ""
-            
-            # Apply B column 28 character limit
-            if len(val_b) > 28:
-                val_b = val_b[:28]
-            
-            # If D column is "Offline", don't show E column
-            if val_d.lower() == "offline":
-                val_e = ""
-            
-            # Calculate Note based on F column (Unix timestamp)
-            note = ""
-            if val_f and val_f.isdigit():
-                try:
-                    # Parse Unix timestamp
-                    timestamp = int(val_f)
-                    last_update = datetime.fromtimestamp(timestamp)
-                    
-                    # Check if more than 1 hour ago
-                    now = datetime.now()
-                    if now - last_update > timedelta(hours=1):
-                        note = "k chắc"
-                except:
-                    pass  # If parsing fails, leave note empty
-            
-            # Format values to fit in table with proper widths
-            val_b_fmt = f"{val_b:<{b_width}}"[:b_width]
-            val_c_fmt = f"{val_c:<{c_width}}"[:c_width] 
-            val_d_fmt = f"{val_d:<{d_width}}"[:d_width]
-            val_e_fmt = f"{val_e:<{e_width}}"[:e_width]
-            note_fmt = f"{note:<{note_width}}"[:note_width]
-            
-            row = f"| {val_b_fmt} | {val_c_fmt} | {val_d_fmt} | {val_e_fmt} | {note_fmt} |"
-            message += row + "\n"
         
-        message += "```"
+        #Separate in to chunks, 15 rows per chunk
+        dataChunk = [data[i:i+15] for i in range(0, len(data), 15)]
+        for chunk in dataChunk:
+            for record in chunk:
+                # Get values for each column
+                val_b = str(record.get(col_b, "")).strip()
+                val_c = str(record.get(col_c, "")).strip()
+                val_d = str(record.get(col_d, "")).strip()
+                val_e = str(record.get(col_e, "")).strip()
+                val_f = str(record.get(col_f, "")).strip() if col_f else ""
+                
+                # Apply B column 28 character limit
+                if len(val_b) > 28:
+                    val_b = val_b[:28]
+                
+                # If D column is "Offline", don't show E column
+                if val_d.lower() == "offline":
+                    val_e = ""
+                
+                # # Calculate Note based on F column (Unix timestamp)
+                # note = ""
+                
+                # Format values to fit in table with proper widths
+                val_b_fmt = f"{val_b:<{b_width}}"[:b_width]
+                val_c_fmt = f"{val_c:<{c_width}}"[:c_width] 
+                val_d_fmt = f"{val_d:<{d_width}}"[:d_width]
+                val_e_fmt = f"{val_e:<{e_width}}"[:e_width]
+                #note_fmt = f"{note:<{note_width}}"[:note_width]
+                if val_f and val_f.isdigit():
+                    try:
+                        # Parse Unix timestamp
+                        timestamp = int(val_f)
+                        last_update = datetime.fromtimestamp(timestamp)
+                        
+                        # Check if more than 1 hour ago
+                        now = datetime.now()
+                        if now - last_update > timedelta(hours=1):
+                            val_d_fmt = "???"
+                    except:
+                        pass  # If parsing fails, leave note empty
+                
+                row = f"| {val_b_fmt} | {val_c_fmt} | {val_d_fmt} | {val_e_fmt} |"
+                message += row + "\n"
+            
+            message += "```"
+            messageChunk.append(message)
+            #Create new one
+            message = "```"
         
-        if len(data) > 15:
-            message += f"\n*... and {len(data) - 15} more records*"
-        
-        return message
+        return messageChunk
     
     def add_new_entry(self, user_id: str) -> bool:
         """

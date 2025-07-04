@@ -110,10 +110,11 @@ class DiscordBot:
                     data = self.sheets_client.get_status_data(worksheet)
                     
                     # Format the data
-                    formatted_data = self.sheets_client.format_status_data(data)
+                    formatted_data: list = self.sheets_client.format_status_data(data)
                     
                     # Send the response directly without embed for larger display
-                    await ctx.send(formatted_data)
+                    for line in formatted_data:
+                        await ctx.send(line)
                     
                     logger.info(f"Successfully sent status data to {ctx.author}")
                 
@@ -147,13 +148,13 @@ class DiscordBot:
             
             embed.add_field(
                 name=f"{config.command_prefix}status",
-                value="Thông báo trạng thái của các account đã được thêm vào. Các thông tin gồm: ID, Rank, Trạng thái, Map đang chơi. Account phải được kết bạn với ChaosMAX#9106 thì mới được cập nhật",
+                value="Thông báo trạng thái của các account đã được thêm vào. Các thông tin gồm: ID, Rank, Trạng thái, Map đang chơi. Account Valorant phải được kết bạn với ChaosMAX#9106 thì mới được cập nhật",
                 inline=False
             )
             
             embed.add_field(
                 name=f"{config.command_prefix}add {{id}}",
-                value="Thêm id vào Sheet. Đảm bảo đã kết bạn với ChaosMAX#9106 để được cập nhật.",
+                value="Thêm id vào Sheet. Đảm bảo đã kết bạn với Valorant ChaosMAX#9106 để được cập nhật.",
                 inline=False
             )
             
@@ -192,7 +193,7 @@ class DiscordBot:
                     success = self.sheets_client.add_new_entry(user_id)
                     
                     if success:
-                        await ctx.send(f"✅ Đã thêm {user_id} vào. Kiểm tra xem đã kết bạn với ChaosMAX#9106 chưa.")
+                        await ctx.send(f"✅ Đã thêm {user_id} vào. Kiểm tra xem đã kết bạn với acc Valorant ChaosMAX#9106 chưa.")
                         logger.info(f"Successfully added entry '{user_id}' for {ctx.author}")
                     else:
                         await ctx.send("❌ Failed to add entry to the sheet. Please try again.")
@@ -217,7 +218,7 @@ class DiscordBot:
     async def start(self):
         """Start the Discord bot."""
         try:
-            await self.bot.start(config.discord_token)
+            await self.bot.start(config.discord_token) # type: ignore
         except discord.LoginFailure:
             logger.error("Invalid Discord bot token")
             raise
