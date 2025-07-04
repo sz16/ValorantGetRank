@@ -162,7 +162,7 @@ class SheetsClient:
         
         # Create header row - B, C, D, E, Note with different widths
         # B column (id) gets 30 chars, others get 12, Note gets 8
-        b_width, c_width, d_width, e_width = 26, 8, 8, 15
+        b_width, c_width, d_width, e_width = 26, 10, 9, 15
         
         display_headers = [
             f"{col_b[:b_width]:<{b_width}}", 
