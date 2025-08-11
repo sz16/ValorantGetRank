@@ -141,7 +141,7 @@ class DiscordBot:
                     return random.choice(A)
 
             
-            self.bot.loop.create_task(self.reminder())
+            self.bot.loop.create_task(reminder())
             
             # Set bot status
             activity = discord.Activity(
