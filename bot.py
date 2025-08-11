@@ -48,6 +48,21 @@ class DiscordBot:
             """Called when the bot is ready."""
             logger.info(f'{self.bot.user} has connected to Discord!')
             logger.info(f'Bot is in {len(self.bot.guilds)} guilds')
+            if not os.path.exists(LOG_FILE):
+                server = bot.get_guild(SERVER_ID)
+                if not server:
+                    return
+                id = {}
+                for member in server.members:
+                    id[member.id] = {
+                        'FIRST_UPDATE': datetime.now().strftime("%Y-%m-%d"),
+                        'LAST_REACT' : datetime.now().strftime("%Y-%m-%d"),
+                        'LAST_REMINDED': datetime.now().strftime("%Y-%m-%d")
+                    }
+                with open(LOG_FILE, "w", encoding="utf-8") as f:
+                    json.dump(id, f, indent=4)
+            
+            bot.loop.create_task(reminder())
             
             # Set bot status
             activity = discord.Activity(
@@ -269,23 +284,6 @@ class DiscordBot:
             
             with open(LOG_FILE, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=4)
-
-        @self.bot.event
-        async def on_ready():
-            print(f"Logged in as {bot.user}")
-            if not os.path.exists(LOG_FILE):
-                server = bot.get_guild(SERVER_ID)
-                if not server:
-                    return
-                id = {}
-                for member in server.members:
-                    id[member.id] = {
-                        'FIRST_UPDATE': datetime.now().strftime("%Y-%m-%d"),
-                        'LAST_REACT' : datetime.now().strftime("%Y-%m-%d"),
-                        'LAST_REMINDED': datetime.now().strftime("%Y-%m-%d")
-                    }
-                with open(LOG_FILE, "w", encoding="utf-8") as f:
-                    json.dump(id, f, indent=4)
                 
         @self.bot.event
         async def on_message(message):
@@ -398,7 +396,7 @@ class DiscordBot:
         Số lần thả react: {userData.get('REACT_COUNT', 0)}
         Dữ liệu thu thập từ {userData.get('FIRST_UPDATE', "Không rõ")}
         """)
-        bot.loop.create_task(reminder())
+        
     
     async def start(self):
         """Start the Discord bot."""
