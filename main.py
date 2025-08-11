@@ -5,6 +5,7 @@ import asyncio
 import logging
 from bot import DiscordBot
 import keep_alive
+from datetime import datetime
 keep_alive.keep_alive()
 
 class HTMLFilter(logging.Filter):
