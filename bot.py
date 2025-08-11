@@ -71,6 +71,75 @@ class DiscordBot:
                     }
                 with open(LOG_FILE, "w", encoding="utf-8") as f:
                     json.dump(id, f, indent=4)
+
+            async def reminder():
+                await bot.wait_until_ready()
+                channel = bot.get_channel(REMINDER_CHANNEL)
+                if not channel:
+                    return
+                if not isinstance(channel, discord.TextChannel):
+                    return
+                
+                while not bot.is_closed():
+                    today = datetime.now()
+                    
+                    #Check hour
+                    if today.hour < REMINDER_START_HOUR or today.hour >= REMINDER_END_HOUR:
+                        await asyncio.sleep(REMINDER_COOLDOWN)
+                        continue
+                    
+                    with open(LOG_FILE, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    
+                    needRemind = []
+                    for id, data in data.items():
+                        last_react = data.get('LAST_REACT', today.strftime("%Y-%m-%d"))
+                        #Check how many days from last react
+                        days_react = (today - datetime.strptime(last_react, "%Y-%m-%d")).days
+                        if days_react < REMINDER_INTERVAL:
+                            continue
+                        
+                        #Check how many days from last reminded
+                        last_reminded = data.get('LAST_REMINDED', today.strftime("%Y-%m-%d"))
+                        days = (today - datetime.strptime(last_reminded, "%Y-%m-%d")).days
+                        if days < REMINDER_COOLDOWN_USER:
+                            continue
+                        
+                        needRemind.append((id, days_react))
+                    
+                    if needRemind:
+                        victim = random.choice(needRemind)
+                        if random.randint(0, 1) == 0: #Spare with 50% chance
+                            await channel.send(get_warning_message(victim[0], victim[1]))
+                            data[victim[0]]['LAST_REMINDED'] = today.strftime("%Y-%m-%d")
+                            with open(LOG_FILE, "w", encoding="utf-8") as f:
+                                json.dump(data, f, indent=4)
+                        else:
+                            #If not spare, write the LAST_REMINDED as the next day of old LAST_REMINDED
+                            data[victim[0]]['LAST_REMINDED'] = (datetime.strptime(last_reminded, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+                            with open(LOG_FILE, "w", encoding="utf-8") as f:
+                                json.dump(data, f, indent=4)
+                    
+                    await asyncio.sleep(REMINDER_COOLDOWN)
+                        
+            def get_warning_message(id, days_react):
+                pingVictim = f"<@{id}>"
+                pingOwner = f"<@&{ID_OWNER}>"
+                
+                if days_react <= 30:
+                    A = [
+                        f"Uhm, {pingVictim}, được {days_react} rồi mà bro chưa về server rồi đấy",
+                        f"{pingVictim}, thỉnh thoảng về server nói chuyện với ae đê",
+                        f"{pingVictim}, ae chưa gặp nhau cỡ {days_react} rồi :>",
+                        f"Kích hoạt ma pháp [Chaos Form], hiến tế {days_react} ngày để triệu hồi [{pingVictim}]"
+                    ]
+                    return random.choice(A)
+                else: #ALERT
+                    A = [
+                        f"Welp, {pingVictim}, hmmm, tôi chỉ muốn nói là bro có thể bị {pingOwner} ban vì không có hoạt động nào trong {days_react} ngày rồi",
+                    ]
+                    return random.choice(A)
+
             
             self.bot.loop.create_task(self._setup_commands.reminder())
             
@@ -304,74 +373,6 @@ class DiscordBot:
             if before.channel != after.channel:
                 if after.channel:
                     log_event("VOICE_JOIN", member, f"Joined: {after.channel.name}")
-
-        async def reminder():
-            await bot.wait_until_ready()
-            channel = bot.get_channel(REMINDER_CHANNEL)
-            if not channel:
-                return
-            if not isinstance(channel, discord.TextChannel):
-                return
-            
-            while not bot.is_closed():
-                today = datetime.now()
-                
-                #Check hour
-                if today.hour < REMINDER_START_HOUR or today.hour >= REMINDER_END_HOUR:
-                    await asyncio.sleep(REMINDER_COOLDOWN)
-                    continue
-                
-                with open(LOG_FILE, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                
-                needRemind = []
-                for id, data in data.items():
-                    last_react = data.get('LAST_REACT', today.strftime("%Y-%m-%d"))
-                    #Check how many days from last react
-                    days_react = (today - datetime.strptime(last_react, "%Y-%m-%d")).days
-                    if days_react < REMINDER_INTERVAL:
-                        continue
-                    
-                    #Check how many days from last reminded
-                    last_reminded = data.get('LAST_REMINDED', today.strftime("%Y-%m-%d"))
-                    days = (today - datetime.strptime(last_reminded, "%Y-%m-%d")).days
-                    if days < REMINDER_COOLDOWN_USER:
-                        continue
-                    
-                    needRemind.append((id, days_react))
-                
-                if needRemind:
-                    victim = random.choice(needRemind)
-                    if random.randint(0, 1) == 0: #Spare with 50% chance
-                        await channel.send(get_warning_message(victim[0], victim[1]))
-                        data[victim[0]]['LAST_REMINDED'] = today.strftime("%Y-%m-%d")
-                        with open(LOG_FILE, "w", encoding="utf-8") as f:
-                            json.dump(data, f, indent=4)
-                    else:
-                        #If not spare, write the LAST_REMINDED as the next day of old LAST_REMINDED
-                        data[victim[0]]['LAST_REMINDED'] = (datetime.strptime(last_reminded, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-                        with open(LOG_FILE, "w", encoding="utf-8") as f:
-                            json.dump(data, f, indent=4)
-                
-                await asyncio.sleep(REMINDER_COOLDOWN)
-                    
-        def get_warning_message(id, days_react):
-            pingVictim = f"<@{id}>"
-            pingOwner = f"<@&{ID_OWNER}>"
-            
-            if days_react <= 30:
-                A = [
-                    f"Uhm, {pingVictim}, được {days_react} rồi mà bro chưa về server rồi đấy",
-                    f"{pingVictim}, thỉnh thoảng về server nói chuyện với ae đê",
-                    f"{pingVictim}, ae chưa gặp nhau cỡ {days_react} rồi :>",
-                    f"Kích hoạt ma pháp [Chaos Form], hiến tế {days_react} ngày để triệu hồi [{pingVictim}]"
-                ]
-                return random.choice(A)
-            else: #ALERT
-                A = [
-                    f"Welp, {pingVictim}, hmmm, tôi chỉ muốn nói là bro có thể bị {pingOwner} ban vì không có hoạt động nào trong {days_react} ngày rồi",
-                ]
-                return random.choice(A)
 
         @self.bot.command()
         async def myinfo(ctx):
