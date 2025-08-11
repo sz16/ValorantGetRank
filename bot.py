@@ -72,7 +72,7 @@ class DiscordBot:
                 with open(LOG_FILE, "w", encoding="utf-8") as f:
                     json.dump(id, f, indent=4)
             
-            self.bot.loop.create_task(self.reminder())
+            self.bot.loop.create_task(self._setup_events.reminder())
             
             # Set bot status
             activity = discord.Activity(
