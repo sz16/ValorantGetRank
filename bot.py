@@ -351,7 +351,7 @@ class DiscordBot:
                 return
             
             log_event("MESSAGE", message.author, message.content)
-            await bot.process_commands(message)
+            await self.bot.process_commands(message)
 
         @self.bot.event
         async def on_reaction_add(reaction, user):
