@@ -72,7 +72,7 @@ class DiscordBot:
                 with open(LOG_FILE, "w", encoding="utf-8") as f:
                     json.dump(id, f, indent=4)
             
-            self.bot.loop.create_task(self._setup_events.reminder())
+            self.bot.loop.create_task(self._setup_commands.reminder())
             
             # Set bot status
             activity = discord.Activity(
@@ -244,15 +244,6 @@ class DiscordBot:
             )
             
             await ctx.send(embed=embed)
-
-        intents = discord.Intents.default()
-        intents.message_content = True
-        intents.messages = True
-        intents.reactions = True
-        intents.voice_states = True
-        intents.members = True
-
-        bot = commands.Bot(command_prefix="!", intents=intents)
 
         def log_event(event_type, user, details):
             id = user.id
