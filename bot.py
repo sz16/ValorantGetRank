@@ -14,6 +14,16 @@ from config import config
 
 logger = logging.getLogger(__name__)
 
+ID_OWNER = 1386556768737427466
+REMINDER_INTERVAL = 10 #days
+REMINDER_COOLDOWN = 120 # seconds. Prevent bot multi spam.
+REMINDER_COOLDOWN_USER = 4 #days
+REMINDER_CHANNEL = 1389554769634398299
+REMINDER_START_HOUR = 19
+REMINDER_END_HOUR = 21
+LOG_FILE = "log.json"
+SERVER_ID = 760008091827306498
+
 class DiscordBot:
     """Discord bot class."""
     
@@ -234,18 +244,6 @@ class DiscordBot:
             )
             
             await ctx.send(embed=embed)
-            
-        LOG_FILE = "log.json"
-        SERVER_ID = 760008091827306498
-
-        REMINDER_INTERVAL = 10 #days
-        REMINDER_COOLDOWN = 120 # seconds. Prevent bot multi spam.
-        REMINDER_COOLDOWN_USER = 4 #days
-        REMINDER_CHANNEL = 1389554769634398299
-        REMINDER_START_HOUR = 19
-        REMINDER_END_HOUR = 21
-
-        ID_OWNER = 1386556768737427466
 
         intents = discord.Intents.default()
         intents.message_content = True
