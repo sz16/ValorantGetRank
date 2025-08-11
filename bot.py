@@ -59,7 +59,7 @@ class DiscordBot:
             logger.info(f'{self.bot.user} has connected to Discord!')
             logger.info(f'Bot is in {len(self.bot.guilds)} guilds')
             if not os.path.exists(LOG_FILE):
-                server = bot.get_guild(SERVER_ID)
+                server = self.bot.get_guild(SERVER_ID)
                 if not server:
                     return
                 id = {}
