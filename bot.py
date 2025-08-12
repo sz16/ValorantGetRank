@@ -72,6 +72,8 @@ class DiscordBot:
                     return
                 id = {}
                 for member in server.members:
+                    if member.bot:
+                        continue
                     id[member.id] = {
                         'NAME': member.name,
                         'FIRST_UPDATE': datetime.now().strftime("%Y-%m-%d"),
